@@ -16,12 +16,18 @@
                 <i class="fa-solid fa-cloud-medical text-2xl"></i>
                 <div>
                     <h1 class="text-lg font-bold">Mom's Meds Tracker</h1>
-                    <p class="text-[11px] text-indigo-200">Shared Family Sync</p>
+                    <p class="text-[11px] text-indigo-200" id="room-label">Connecting...</p>
                 </div>
             </div>
-             <button onclick="fetchData()" class="bg-indigo-500 hover:bg-indigo-400 text-white p-2 rounded-lg text-xs font-semibold transition shadow" title="Manual Sync">
-                <i class="fa-solid fa-rotate" id="manual-sync-icon"></i>
-            </button>
+            <div class="flex space-x-2">
+                <button onclick="fetchData()" class="bg-indigo-500 hover:bg-indigo-400 text-white p-2 rounded-lg text-xs font-semibold transition shadow" title="Manual Sync">
+                    <i class="fa-solid fa-rotate" id="manual-sync-icon"></i>
+                </button>
+                <button onclick="openShareModal()" class="bg-indigo-500 hover:bg-indigo-400 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition shadow flex items-center space-x-1.5">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    <span class="hidden sm:inline">Share</span>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -29,10 +35,10 @@
     <main class="flex-1 max-w-xl w-full mx-auto p-4 space-y-5 overflow-y-auto pb-12">
 
         <!-- Sync Status Banner -->
-        <div id="status-banner" class="bg-emerald-50 border-l-4 border-emerald-400 p-3 rounded-r-lg shadow-sm flex items-center justify-between">
+        <div id="status-banner" class="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r-lg shadow-sm flex items-center justify-between">
             <div class="flex items-center space-x-2.5">
-                <i class="fa-solid fa-cloud text-emerald-500" id="sync-icon"></i>
-                <span class="text-xs text-emerald-700 font-medium" id="status-text">Connected to Family Cloud</span>
+                <i class="fa-solid fa-rotate fa-spin text-blue-500" id="sync-icon"></i>
+                <span class="text-xs text-blue-700 font-medium" id="status-text">Creating secure family room...</span>
             </div>
             <span id="active-user-badge" class="text-[10px] bg-slate-200 text-slate-800 px-2 py-0.5 rounded-full font-semibold">Guest</span>
         </div>
@@ -54,13 +60,10 @@
         </div>
 
         <!-- Medications List -->
-        <div class="space-y-4">
+        <div class="space-y-4" id="meds-container" style="opacity: 0.5; pointer-events: none; transition: opacity 0.3s;">
             
             <!-- Morphine -->
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3 relative overflow-hidden">
-                <div id="loading-Morphine" class="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 hidden flex items-center justify-center">
-                    <i class="fa-solid fa-spinner fa-spin text-indigo-600 text-xl"></i>
-                </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
                 <div class="flex justify-between items-start">
                     <div>
                         <span class="bg-rose-100 text-rose-700 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">Pain / Opioid</span>
@@ -85,10 +88,7 @@
             </div>
 
             <!-- Lorazepam -->
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3 relative overflow-hidden">
-                <div id="loading-Lorazepam" class="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 hidden flex items-center justify-center">
-                    <i class="fa-solid fa-spinner fa-spin text-indigo-600 text-xl"></i>
-                </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
                 <div class="flex justify-between items-start">
                     <div>
                         <span class="bg-blue-100 text-blue-700 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">Anxiety / Calm</span>
@@ -113,10 +113,7 @@
             </div>
 
             <!-- Drops -->
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3 relative overflow-hidden">
-                <div id="loading-Drops" class="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 hidden flex items-center justify-center">
-                    <i class="fa-solid fa-spinner fa-spin text-indigo-600 text-xl"></i>
-                </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
                 <div class="flex justify-between items-start">
                     <div>
                         <span class="bg-emerald-100 text-emerald-700 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">PRN Drops</span>
@@ -141,10 +138,7 @@
             </div>
 
             <!-- Scopolamine Patch -->
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3 relative overflow-hidden">
-                <div id="loading-Scopolamine" class="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 hidden flex items-center justify-center">
-                    <i class="fa-solid fa-spinner fa-spin text-indigo-600 text-xl"></i>
-                </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
                 <div class="flex justify-between items-start">
                     <div>
                         <span class="bg-purple-100 text-purple-700 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">Transdermal Patch</span>
@@ -171,13 +165,13 @@
         </div>
 
         <!-- Activity History Feed -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3 mt-4">
             <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
                 <span><i class="fa-solid fa-clock-rotate-left mr-1.5"></i>Family Activity Feed</span>
                 <span id="feed-count" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">0 doses</span>
             </h3>
             <div id="activity-feed" class="space-y-2 max-h-60 overflow-y-auto pr-1 text-xs">
-                <p class="text-slate-400 text-center py-4 italic" id="feed-status">Connecting to cloud...</p>
+                <p class="text-slate-400 text-center py-4 italic" id="feed-status">Waiting for data...</p>
             </div>
         </div>
 
@@ -192,6 +186,24 @@
             <button onclick="saveName()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-medium text-xs transition shadow">Save Name</button>
         </div>
     </div>
+    
+    <!-- Share Modal -->
+    <div id="share-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-base font-bold text-slate-900">Share with Family</h3>
+                <button onclick="closeShareModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-base"></i></button>
+            </div>
+            <p class="text-xs text-slate-600">
+                Text this link to your family members. Anyone who opens it joins this exact shared tracker instantly—no login required!
+            </p>
+            <div class="flex items-center space-x-2">
+                <input type="text" id="share-url-input" readonly class="w-full bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-600 select-all">
+                <button onclick="copyShareLink()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl text-xs font-medium transition shrink-0">Copy</button>
+            </div>
+            <button onclick="closeShareModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl font-medium text-xs transition">Done</button>
+        </div>
+    </div>
 
     <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-4 right-4 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 text-xs flex items-center space-x-2">
@@ -201,13 +213,10 @@
 
     <script>
         // ==========================================
-        // SERVERLESS JSONBIN CONFIGURATION
+        // DYNAMIC CLOUD SETUP (JSONBLOB API)
         // ==========================================
-        // This acts as a free backend without Firebase/Supabase
-        const BIN_ID = '66a18d18e41b4d34e4175a98'; 
-        const MASTER_KEY = '$2a$10$fNVKjBw4B79Jd4oVnB221uFp2zU9pZqV8.bI8s4u4dD3N.O/Xw51y'; 
-        const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
-        
+        const API_BASE = 'https://jsonblob.com/api/jsonBlob';
+        let blobId = new URLSearchParams(window.location.search).get('room');
         let appData = { meds: {}, history: [] };
 
         // Caretaker Name Management
@@ -218,44 +227,67 @@
             updateNameDisplay();
         }
 
-        // Initial Data Fetch
-        fetchData();
-        
-        // Auto-refresh every 30 seconds so devices stay in sync
-        setInterval(fetchData, 30000); 
+        // Init App Data
+        initCloud();
 
         // --- Functions --- //
 
+        async function initCloud() {
+            if (!blobId) {
+                // If there's no room ID in the URL, create a new one!
+                try {
+                    const response = await fetch(API_BASE, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                        body: JSON.stringify({ meds: {}, history: [] })
+                    });
+                    
+                    const location = response.headers.get('Location');
+                    if (location) {
+                        blobId = location.split('/').pop();
+                        // Redirect to the new room URL
+                        window.location.href = `?room=${blobId}`;
+                    } else {
+                        throw new Error("Couldn't create room");
+                    }
+                } catch (e) {
+                    console.error("Error creating room:", e);
+                    setBannerStatus('error');
+                    enableInteractions();
+                }
+            } else {
+                // We have a room ID, fetch the data!
+                document.getElementById('room-label').innerText = `Room: #${blobId.substring(0,6)}...`;
+                fetchData();
+                // Refresh data automatically every 10 seconds
+                setInterval(fetchData, 10000); 
+            }
+        }
+
         async function fetchData() {
+            if (!blobId) return;
+            
             const syncIcon = document.getElementById('manual-sync-icon');
             syncIcon.classList.add('fa-spin');
             
             try {
-                const response = await fetch(BIN_URL, {
-                    headers: { 'X-Access-Key': MASTER_KEY }
+                const response = await fetch(`${API_BASE}/${blobId}`, {
+                    headers: { 'Accept': 'application/json' }
                 });
                 
                 if (response.ok) {
-                    const data = await response.json();
-                    appData = data.record;
-                    
-                    // Initialize empty structure if blank
+                    appData = await response.json();
                     if (!appData.meds) appData = { meds: {}, history: [] };
                     
                     updateUIState(appData);
                     setBannerStatus('success');
+                    enableInteractions();
                 } else {
                     throw new Error('Failed to fetch');
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
                 setBannerStatus('error');
-                // Try to load from local storage as backup
-                const local = localStorage.getItem('moms_meds_backup');
-                if(local) {
-                    appData = JSON.parse(local);
-                    updateUIState(appData);
-                }
             } finally {
                 setTimeout(() => syncIcon.classList.remove('fa-spin'), 500);
             }
@@ -267,59 +299,57 @@
                 return;
             }
 
-            // Show loading on the card
-            document.getElementById(`loading-${medName}`).classList.remove('hidden');
+            if (!blobId) {
+                showToast("Still connecting to room...", "error");
+                return;
+            }
 
             const now = new Date().toISOString();
             
-            // Re-fetch first to ensure we don't overwrite someone else's log that just happened
+            // Step 1: Pre-fetch latest data to avoid overwriting a sibling's recent log
             try {
-                const fetchRes = await fetch(BIN_URL, { headers: { 'X-Access-Key': MASTER_KEY } });
+                const fetchRes = await fetch(`${API_BASE}/${blobId}`);
                 if (fetchRes.ok) {
-                    const data = await fetchRes.json();
-                    appData = data.record;
+                    appData = await fetchRes.json();
                 }
             } catch(e) { console.warn("Pre-fetch failed, using cached data"); }
 
-            // Update data locally
+            // Step 2: Add our new log locally
+            if (!appData.meds) appData.meds = {};
+            if (!appData.history) appData.history = [];
+            
             appData.meds[medName] = now;
             appData.history.unshift({ med: medName, time: now, by: caregiverName });
             
-            // Keep history lean (last 40)
-            if(appData.history.length > 40) appData.history.pop();
+            if(appData.history.length > 40) appData.history.pop(); // keep log short
 
-            // Save to Cloud
+            // Step 3: Optimistically update UI so it feels instant
+            updateUIState(appData);
+
+            // Step 4: Save to Cloud
             try {
-                const response = await fetch(BIN_URL, {
+                const response = await fetch(`${API_BASE}/${blobId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Access-Key': MASTER_KEY
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify(appData)
                 });
 
                 if (response.ok) {
                     showToast(`Logged ${medName} to family cloud!`, 'success');
-                    updateUIState(appData);
-                    // Backup locally just in case
-                    localStorage.setItem('moms_meds_backup', JSON.stringify(appData));
                 } else {
-                    throw new Error("Failed to save to cloud");
+                    throw new Error("Failed to save");
                 }
             } catch (error) {
                 console.error("Save error:", error);
-                showToast(`Failed to save to cloud. Saved locally.`, 'error');
-                updateUIState(appData);
-                localStorage.setItem('moms_meds_backup', JSON.stringify(appData));
-            } finally {
-                document.getElementById(`loading-${medName}`).classList.add('hidden');
+                showToast(`Check internet. Saved locally for now.`, 'error');
             }
         }
 
         function updateUIState(data) {
             const meds = data.meds || {};
-            // Minimum hours before next dose
             const intervals = { Morphine: 2, Lorazepam: 4, Drops: 2, Scopolamine: 72 };
 
             // Update Medication Cards
@@ -370,7 +400,6 @@
                 const itemTime = new Date(item.time);
                 const timeStr = itemTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' - ' + itemTime.toLocaleDateString([], {month:'short', day:'numeric'});
                 
-                // Color code the feed dots
                 let dotColor = 'bg-slate-400';
                 if(item.med === 'Morphine') dotColor = 'bg-rose-500';
                 if(item.med === 'Lorazepam') dotColor = 'bg-blue-500';
@@ -393,6 +422,11 @@
         }
 
         // --- Helper Functions --- //
+
+        function enableInteractions() {
+            document.getElementById('meds-container').style.opacity = "1";
+            document.getElementById('meds-container').style.pointerEvents = "auto";
+        }
 
         function openNameModal() {
             document.getElementById('name-modal').classList.remove('hidden');
@@ -431,8 +465,27 @@
             } else {
                 banner.className = "bg-rose-50 border-l-4 border-rose-400 p-3 rounded-r-lg shadow-sm flex items-center justify-between";
                 icon.className = "fa-solid fa-triangle-exclamation text-rose-500";
-                text.innerText = "Offline. Connect to internet to sync.";
+                text.innerText = "Offline. Connecting...";
             }
+        }
+        
+        function openShareModal() {
+            document.getElementById('share-url-input').value = window.location.href;
+            document.getElementById('share-modal').classList.remove('hidden');
+            document.getElementById('share-modal').classList.add('flex');
+        }
+
+        function closeShareModal() {
+            document.getElementById('share-modal').classList.remove('flex');
+            document.getElementById('share-modal').classList.add('hidden');
+        }
+
+        function copyShareLink() {
+            const input = document.getElementById('share-url-input');
+            input.select();
+            document.execCommand('copy');
+            showToast('Link copied! Paste it into a text message.');
+            closeShareModal();
         }
 
         function showToast(msg, type = 'success') {
