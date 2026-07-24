@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mom's Meds - Family Care & Check-In Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 h-full flex flex-col font-sans">
+
+    <!-- Header -->
+    <header class="bg-indigo-600 text-white shadow-md p-4 sticky top-0 z-50">
+        <div class="max-w-xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-cloud-medical text-2xl"></i>
+                <div>
+                    <h1 class="text-lg font-bold">Mom's Meds Tracker</h1>
+                    <p class="text-[11px] text-indigo-200" id="family-room-label">Family Care Room</p>
+                </div>
+            </div>
+            <div class="flex space-x-2">
+                <button onclick="openShareModal()" class="bg-indigo-500 hover:bg-indigo-400 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition shadow flex items-center space-x-1.5">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    <span>Share</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-xl w-full mx-auto p-4 space-y-5 overflow-y-auto pb-12">
+
+        <!-- Sync Status Banner -->
+        <div id="status-banner" class="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r-lg shadow-sm flex items-center justify-between">
+            <div class="flex items-center space-x-2.5">
+                <i class="fa-solid fa-rotate fa-spin text-blue-500" id="sync-icon"></i>
+                <span class="text-xs text-blue-700 font-medium" id="status-text">Connecting to cloud sync...</span>
+            </div>
+            <span id="active-user-badge" class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold">Guest</span>
+        </div>
+
+        <!-- Caregiver Identity Prompt Card -->
+        <div id="identity-card" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-50 text-indigo-600 p-2.5 rounded-xl">
+                    <i class="fa-solid fa-user-pen"></i>
+                </div>
+                <div>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Your Caretaker Name</h3>
+                    <p class="text-sm font-bold text-slate-900" id="current-name-display">Not set yet</p>
+                </div>
+            </div>
+            <button onclick="openNameModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-medium transition">
+                Change Name
+            </button>
+        </div>
+
+        <!-- Medications List -->
+        <div class="space-y-4">
+            
+            <!-- Morphine -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="bg-rose-100 text-rose-700 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">Pain / Opioid</span>
+                        <h2 class="text-base font-bold text-slate-900 mt-1">Morphine (5mg)</h2>
+                        <p class="text-slate-500 text-xs">Every 4 hrs (every 2 hrs as needed)</p>
+                    </div>
+                    <button onclick="logMedication('Morphine', 2)" class="bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-2 rounded-xl transition text-xs font-semibold shadow-sm flex items-center space-x-1.5">
+                        <i class="fa-solid fa-syringe"></i>
+                        <span>Log Dose</span>
+                    </button>
+                </div>
+                <div class="bg-slate-50 p-2.5 rounded-xl flex justify-between items-center text-xs">
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">LAST GIVEN</span>
+                        <strong id="last-Morphine" class="text-slate-700">None logged</strong>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-slate-400 block text-[10px]">NEXT ELIGIBLE (2H / 4H)</span>
+                        <strong id="next-Morphine" class="text-emerald-600">Available Now</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lorazepam -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="bg-blue-100 text-blue-700 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">Anxiety / Calm</span>
+                        <h2 class="text-base font-bold text-slate-900 mt-1">Lorazepam</h2>
+                        <p class="text-slate-500 text-xs">Every 4 hours as needed</p>
+                    </div>
+                    <button onclick="logMedication('Lorazepam', 4)" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-xl transition text-xs font-semibold shadow-sm flex items-center space-x-1.5">
+                        <i class="fa-solid fa-pills"></i>
+                        <span>Log Dose</span>
+                    </button>
+                </div>
+                <div class="bg-slate-50 p-2.5 rounded-xl flex justify-between items-center text-xs">
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">LAST GIVEN</span>
+                        <strong id="last-Lorazepam" class="text-slate-700">None logged</strong>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-slate-400 block text-[10px]">NEXT ELIGIBLE (4H)</span>
+                        <strong id="next-Lorazepam" class="text-emerald-600">Available Now</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Drops -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="bg-emerald-100 text-emerald-700 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">PRN Drops</span>
+                        <h2 class="text-base font-bold text-slate-900 mt-1">2 Drops</h2>
+                        <p class="text-slate-500 text-xs">Every 2 hours as needed</p>
+                    </div>
+                    <button onclick="logMedication('Drops', 2)" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl transition text-xs font-semibold shadow-sm flex items-center space-x-1.5">
+                        <i class="fa-solid fa-droplet"></i>
+                        <span>Log Dose</span>
+                    </button>
+                </div>
+                <div class="bg-slate-50 p-2.5 rounded-xl flex justify-between items-center text-xs">
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">LAST GIVEN</span>
+                        <strong id="last-Drops" class="text-slate-700">None logged</strong>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-slate-400 block text-[10px]">NEXT ELIGIBLE (2H)</span>
+                        <strong id="next-Drops" class="text-emerald-600">Available Now</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scopolamine Patch -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="bg-purple-100 text-purple-700 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">Transdermal Patch</span>
+                        <h2 class="text-base font-bold text-slate-900 mt-1">Scopolamine Patch</h2>
+                        <p class="text-slate-500 text-xs">Change every 3 days (Started July 25)</p>
+                    </div>
+                    <button onclick="logMedication('Scopolamine', 72)" class="bg-purple-600 hover:bg-purple-700 text-white px-3.5 py-2 rounded-xl transition text-xs font-semibold shadow-sm flex items-center space-x-1.5">
+                        <i class="fa-solid fa-rotate"></i>
+                        <span>Change Patch</span>
+                    </button>
+                </div>
+                <div class="bg-slate-50 p-2.5 rounded-xl flex justify-between items-center text-xs">
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">LAST CHANGED</span>
+                        <strong id="last-Scopolamine" class="text-slate-700">Loading...</strong>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-slate-400 block text-[10px]">NEXT CHANGE (3 DAYS)</span>
+                        <strong id="next-Scopolamine" class="text-purple-700 font-semibold">Loading...</strong>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Activity History Feed -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                <span><i class="fa-solid fa-clock-rotate-left mr-1.5"></i>Family Activity Feed & Check-Ins</span>
+                <span id="feed-count" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">0 doses</span>
+            </h3>
+            <div id="activity-feed" class="space-y-2 max-h-48 overflow-y-auto pr-1 text-xs">
+                <p class="text-slate-400 text-center py-4 italic">No medication doses logged yet.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Name Modal -->
+    <div id="name-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl space-y-4">
+            <h3 class="text-base font-bold text-slate-900">Who is logging in?</h3>
+            <p class="text-xs text-slate-500">Enter your name so family members know who gave the last dose.</p>
+            <input type="text" id="name-input" placeholder="e.g. Sarah (Daughter)" class="w-full bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <button onclick="saveName()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-medium text-xs transition shadow">Save Name</button>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-base font-bold text-slate-900">Share with Family</h3>
+                <button onclick="closeShareModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-base"></i></button>
+            </div>
+            <p class="text-xs text-slate-600">
+                Text this link to your family members. Anyone who opens it joins this exact shared tracker instantly—no login required!
+            </p>
+            <div class="flex items-center space-x-2">
+                <input type="text" id="share-url-input" readonly class="w-full bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-600 select-all">
+                <button onclick="copyShareLink()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl text-xs font-medium transition shrink-0">Copy</button>
+            </div>
+            <button onclick="closeShareModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl font-medium text-xs transition">Done</button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 text-xs flex items-center space-x-2">
+        <i class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toast-msg">Updated successfully!</span>
+    </div>
+
+    <script>
+        // Firebase Setup & Auto-Room Generation
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'moms-meds-family-v2';
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Check if URL has a family room code, if not generate one and reload
+        const urlParams = new URLSearchParams(window.location.search);
+        let roomCode = urlParams.get('room');
+        if (!roomCode) {
+            roomCode = 'room_' + Math.random().toString(36).substring(2, 8);
+            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?room=' + roomCode;
+            window.history.replaceState({path: newUrl}, '', newUrl);
+        }
+        document.getElementById('family-room-label').innerText = `Room Code: #${roomCode}`;
+
+        // Caretaker Name Management
+        let caregiverName = localStorage.getItem('moms_meds_caretaker_name');
+        if (!caregiverName) {
+            setTimeout(openNameModal, 500);
+        } else {
+            updateNameDisplay();
+        }
+
+        function openNameModal() {
+            document.getElementById('name-modal').classList.remove('hidden');
+            document.getElementById('name-modal').classList.add('flex');
+            if(caregiverName) document.getElementById('name-input').value = caregiverName;
+        }
+
+        function saveName() {
+            const inputVal = document.getElementById('name-input').value.trim();
+            if(!inputVal) {
+                showToast("Please enter your name!");
+                return;
+            }
+            caregiverName = inputVal;
+            localStorage.setItem('moms_meds_caretaker_name', caregiverName);
+            updateNameDisplay();
+            document.getElementById('name-modal').classList.remove('flex');
+            document.getElementById('name-modal').classList.add('hidden');
+            showToast(`Welcome, ${caregiverName}!`);
+        }
+
+        function updateNameDisplay() {
+            document.getElementById('current-name-display').innerText = caregiverName || 'Not set';
+            document.getElementById('active-user-badge').innerText = caregiverName ? `Logged in as ${caregiverName}` : 'Guest';
+        }
+
+        // Firestore Real-Time Listener
+        const docRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('rooms').doc(roomCode);
+
+        docRef.onSnapshot((doc) => {
+            const banner = document.getElementById('status-banner');
+            const icon = document.getElementById('sync-icon');
+            const statusText = document.getElementById('status-text');
+            
+            banner.className = "bg-emerald-50 border-l-4 border-emerald-400 p-3 rounded-r-lg shadow-sm flex items-center justify-between";
+            icon.className = "fa-solid fa-cloud text-emerald-500";
+            statusText.innerText = "Live cloud sync active (Updates instantly across family phones)";
+
+            if (doc.exists) {
+                const data = doc.data();
+                updateUIState(data);
+            } else {
+                // Initialize default state
+                const defaultData = {
+                    meds: {
+                        Morphine: null,
+                        Lorazepam: null,
+                        Drops: null,
+                        Scopolamine: new Date('2026-07-25T08:00:00').toISOString()
+                    },
+                    history: []
+                };
+                docRef.set(defaultData);
+            }
+        }, (error) => {
+            const banner = document.getElementById('status-banner');
+            banner.className = "bg-rose-50 border-l-4 border-rose-400 p-3 rounded-r-lg shadow-sm flex items-center justify-between";
+            statusText.innerText = "Cloud sync offline. Check internet connection.";
+        });
+
+        function logMedication(medName, defaultHours) {
+            if (!caregiverName) {
+                openNameModal();
+                return;
+            }
+
+            const now = new Date();
+            
+            docRef.get().then((doc) => {
+                let data = doc.exists ? doc.data() : { meds: {}, history: [] };
+                if(!data.meds) data.meds = {};
+                if(!data.history) data.history = [];
+
+                data.meds[medName] = now.toISOString();
+                
+                // Add to history feed
+                data.history.unshift({
+                    med: medName,
+                    time: now.toISOString(),
+                    by: caregiverName
+                });
+
+                // Keep last 30 entries max
+                if(data.history.length > 30) data.history.pop();
+
+                docRef.set(data).then(() => {
+                    showToast(`Logged ${medName} dose successfully!`);
+                });
+            });
+        }
+
+        function updateUIState(data) {
+            const meds = data.meds || {};
+            const intervals = { Morphine: 4, Lorazepam: 4, Drops: 2, Scopolamine: 72 };
+
+            // Update Medication Cards
+            ['Morphine', 'Lorazepam', 'Drops', 'Scopolamine'].forEach(med => {
+                const timestamp = meds[med];
+                const lastEl = document.getElementById(`last-${med}`);
+                const nextEl = document.getElementById(`next-${med}`);
+
+                if (timestamp) {
+                    const time = new Date(timestamp);
+                    if (med === 'Scopolamine') {
+                        const next = new Date(time.getTime() + 72 * 60 * 60 * 1000);
+                        lastEl.innerText = time.toLocaleDateString();
+                        nextEl.innerText = next.toLocaleDateString();
+                    } else {
+                        const nextTime = new Date(time.getTime() + intervals[med] * 60 * 60 * 1000);
+                        lastEl.innerText = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' (' + time.toLocaleDateString([], {month:'numeric', day:'numeric'}) + ')';
+                        
+                        const isPast = new Date() >= nextTime;
+                        if(isPast) {
+                            nextEl.innerText = "Available Now";
+                            nextEl.className = "text-emerald-600 font-bold";
+                        } else {
+                            nextEl.innerText = nextTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            nextEl.className = "text-amber-600 font-semibold";
+                        }
+                    }
+                } else {
+                    lastEl.innerText = "None logged";
+                    nextEl.innerText = "Available Now";
+                    nextEl.className = "text-emerald-600 font-bold";
+                }
+            });
+
+            // Update Activity Feed
+            const feedContainer = document.getElementById('activity-feed');
+            const history = data.history || [];
+            document.getElementById('feed-count').innerText = `${history.length} doses`;
+
+            if (history.length === 0) {
+                feedContainer.innerHTML = `<p class="text-slate-400 text-center py-4 italic">No medication doses logged yet.</p>`;
+                return;
+            }
+
+            let html = '';
+            history.forEach(item => {
+                const itemTime = new Date(item.time);
+                const timeStr = itemTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' ' + itemTime.toLocaleDateString([], {month:'numeric', day:'numeric'});
+                html += `
+                    <div class="bg-slate-50 p-2.5 rounded-xl flex items-center justify-between border border-slate-100">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                            <div>
+                                <strong class="text-slate-900">${item.med}</strong> given by <span class="text-indigo-600 font-medium">${item.by}</span>
+                            </div>
+                        </div>
+                        <span class="text-slate-400 text-[10px]">${timeStr}</span>
+                    </div>
+                `;
+            });
+            feedContainer.innerHTML = html;
+        }
+
+        function openShareModal() {
+            document.getElementById('share-url-input').value = window.location.href;
+            document.getElementById('share-modal').classList.remove('hidden');
+            document.getElementById('share-modal').classList.add('flex');
+        }
+
+        function closeShareModal() {
+            document.getElementById('share-modal').classList.remove('flex');
+            document.getElementById('share-modal').classList.add('hidden');
+        }
+
+        function copyShareLink() {
+            const input = document.getElementById('share-url-input');
+            input.select();
+            document.execCommand('copy');
+            showToast('Link copied! Paste it into a text message for family.');
+            closeShareModal();
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
+
